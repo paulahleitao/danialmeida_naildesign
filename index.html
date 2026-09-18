@@ -939,8 +939,11 @@ function renderDayAdjust(barber, date){
   const dayBlocks = db.blocks.filter(b=>b.barberId===barber.id && b.date===date).map(b=>Object.assign({}, b, {fixed:false}));
   const allBlocks = recurringToday.concat(dayBlocks).sort((a,b)=>a.start-b.start);
   let blockList = allBlocks.length ? allBlocks.map(b=>`
-    <div class="row" style="margin-bottom:8px">
-      <div class="grow sub">${minToLabel(b.start)}–${minToLabel(b.end)} · ${esc(b.label)} · ${b.fixed?'fixo':'só nesse dia'}</div>
+    <div class="row" style="margin-bottom:8px;align-items:flex-start">
+      <div class="grow">
+        <div class="name" style="font-size:14px">${esc(b.label)}${b.fixed ? ' <span style="font-size:9px;font-weight:700;color:var(--steel);letter-spacing:0.05em;text-transform:uppercase;vertical-align:middle">· fixo</span>' : ''}</div>
+        <div class="sub">${minToLabel(b.start)}–${minToLabel(b.end)}</div>
+      </div>
       <button class="btn btn-sm btn-red" onclick="${b.fixed ? `removeRecurringBlock('${barber.id}','${b.id}')` : `removeBlock('${b.id}')`}">Remover</button>
     </div>`).join('') : '<div class="sub" style="margin-bottom:8px">Nenhum bloqueio nesse dia.</div>';
 
@@ -1558,7 +1561,7 @@ function renderServicosTab(barber){
       </div>
       <div class="flexbtns" style="margin-top:2px">
         <button class="btn btn-sm btn-red" onclick="deleteService('${s.id}')">Remover</button>
-        <button id="svcSaveBtn_${s.id}" class="btn btn-sm btn-outline" disabled onclick="saveServiceDraft('${s.id}')">✓ Salvo</button>
+        <button id="svcSaveBtn_${s.id}" class="btn btn-sm btn-steel" disabled onclick="saveServiceDraft('${s.id}')">✓ Salvo</button>
       </div>
     </div>`).join('');
   return `
@@ -1570,7 +1573,7 @@ function markServiceDirty(id){
   const btn = document.getElementById('svcSaveBtn_'+id);
   if(!btn) return;
   btn.textContent = 'Salvar';
-  btn.classList.remove('btn-outline');
+  btn.classList.remove('btn-steel');
   btn.classList.add('btn-gold');
   btn.disabled = false;
 }
@@ -1588,7 +1591,7 @@ async function saveServiceDraft(id){
   if(btn){
     btn.textContent = '✓ Salvo';
     btn.classList.remove('btn-gold');
-    btn.classList.add('btn-outline');
+    btn.classList.add('btn-steel');
     btn.disabled = true;
   }
 }
