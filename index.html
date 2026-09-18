@@ -830,26 +830,30 @@ async function clientCancelAppt(id){
 
 /* ---------------- BARBER LOGIN ---------------- */
 function renderBarberLogin(){
-  let cards = db.barbers.map(b=>`
+  const single = db.barbers.length===1 ? db.barbers[0] : null;
+  const cards = single ? '' : db.barbers.map(b=>`
     <div class="card select" onclick="pickBarberLogin('${b.id}')">
       <div class="row"><div class="avatar">💅</div><div class="grow"><div class="name">${esc(b.name)}</div></div><div>›</div></div>
     </div>`).join('');
   return `
     <div class="topbar"><button class="link-btn" onclick="go('home')">‹ Início</button></div>
     <div class="content">
-      <div class="center" style="margin-bottom:10px">${logoMark(90)}</div>
-      <h1 class="page">Login da profissional</h1>
-      ${cards}
-      <div id="pinBox"></div>
+      <div class="center" style="margin-bottom:8px">${logoMark(130)}</div>
+      <div class="center sub" style="text-transform:uppercase;letter-spacing:1.5px;font-size:12px;margin-bottom:20px">Login da profissional</div>
+      ${single ? `<div class="center name" style="font-size:19px;margin-bottom:16px">${esc(single.name)}</div>` : cards}
+      <div id="pinBox">${single ? pinBoxHtml(single.id) : ''}</div>
     </div>`;
 }
-function pickBarberLogin(id){
-  document.getElementById('pinBox').innerHTML = `
-    <label class="field-label" style="margin-top:12px">PIN</label>
+function pinBoxHtml(id){
+  return `
+    <label class="field-label" style="margin-top:4px">PIN</label>
     <input id="pinInput" type="password" inputmode="numeric" placeholder="****">
     <button class="btn btn-gold" onclick="tryLogin('${id}')">Entrar</button>
     <button class="link-btn" style="margin-top:8px" onclick="showForgotPin('${id}')">Esqueci minha senha</button>
     <div id="forgotBox"></div>`;
+}
+function pickBarberLogin(id){
+  document.getElementById('pinBox').innerHTML = pinBoxHtml(id);
 }
 async function tryLogin(id){
   const barber = db.barbers.find(b=>b.id===id);
