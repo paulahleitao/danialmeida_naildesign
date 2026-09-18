@@ -716,9 +716,9 @@ function renderClientConfirm(){
           ${totalPrice>0 ? `<div class="row" style="margin-top:6px;border-top:1px solid var(--line);padding-top:8px"><div class="grow name">Total</div><div class="name">R$ ${totalPrice.toFixed(2)}</div></div>` : ''}
         </div>
       `}
-      ${items.map(it=>`<a class="btn btn-outline" style="margin-top:10px;text-decoration:none;box-sizing:border-box;display:block" href="${makeGCalUrl(it.date, it.slot, it.duration, it.name+' - '+barber.name, 'Agendamento no Dani Almeida Nail Design.'+(it.price>0?' Valor R$ '+it.price.toFixed(2):''))}">Adicionar${multi?' '+esc(it.name):''} ao Google Agenda${multi?'':' (opcional)'}</a>`).join('')}
-      ${barber.whatsapp ? `<button class="btn btn-steel" style="margin-top:10px" onclick="openWhats('${barber.whatsapp}','Olá ${esc(barber.name)}! Confirmando meu agendamento.')">Falar no WhatsApp</button>` : ''}
       <button class="btn btn-gold" style="margin-top:10px" onclick="go('home')">Concluir</button>
+      ${barber.whatsapp ? `<button class="btn btn-steel" style="margin-top:10px" onclick="openWhats('${barber.whatsapp}','Olá ${esc(barber.name)}! Confirmando meu agendamento.')">Falar no WhatsApp</button>` : ''}
+      ${items.map(it=>`<a class="btn btn-outline" style="margin-top:10px;text-decoration:none;box-sizing:border-box;display:block" href="${makeGCalUrl(it.date, it.slot, it.duration, it.name+' - '+barber.name, 'Agendamento no Dani Almeida Nail Design.'+(it.price>0?' Valor R$ '+it.price.toFixed(2):''))}">Adicionar${multi?' '+esc(it.name):''} ao Google Agenda${multi?'':' (opcional)'}</a>`).join('')}
     </div>`;
 }
 
