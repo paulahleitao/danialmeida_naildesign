@@ -874,7 +874,7 @@ function renderBarberDashboard(){
   if(tab==='config') body = renderConfigTab(barber);
   return `
     <div class="topbar">
-      <div class="brand">${barberPoleIcon(26)}${esc(barber.name)}</div>
+      <div class="brand">${logoMark(26)}${esc(barber.name)}</div>
       <button class="link-btn" onclick="go('home')">Sair</button>
     </div>
     <div class="content">${body}</div>
@@ -1569,8 +1569,8 @@ function renderConfigTab(barber){
       </div>
       <div class="dayrow">${chips}</div>
       <div class="grid2">
-        <div><label class="field-label">Início</label><input value="${minToLabel(g.start)}" onchange="updateGroupTime('${g.id}','start',this.value)"></div>
-        <div><label class="field-label">Fim</label><input value="${minToLabel(g.end)}" onchange="updateGroupTime('${g.id}','end',this.value)"></div>
+        <div><label class="field-label">Início</label><input value="${minToLabel(g.start)}" inputmode="numeric" oninput="maskTimeInput(this)" onchange="updateGroupTime('${g.id}','start',this.value)"></div>
+        <div><label class="field-label">Fim</label><input value="${minToLabel(g.end)}" inputmode="numeric" oninput="maskTimeInput(this)" onchange="updateGroupTime('${g.id}','end',this.value)"></div>
       </div>
     </div>`;
   }).join('');
@@ -1601,8 +1601,8 @@ function renderConfigTab(barber){
       <label class="field-label" style="margin-top:6px">Em quais dias</label>
       <div class="dayrow">${recurChips}</div>
       <div class="grid2">
-        <div><label class="field-label">De</label><input id="recurStart" placeholder="12:00"></div>
-        <div><label class="field-label">Até</label><input id="recurEnd" placeholder="13:00"></div>
+        <div><label class="field-label">De</label><input id="recurStart" inputmode="numeric" oninput="maskTimeInput(this)" placeholder="12:00"></div>
+        <div><label class="field-label">Até</label><input id="recurEnd" inputmode="numeric" oninput="maskTimeInput(this)" placeholder="13:00"></div>
       </div>
       <input id="recurLabel" placeholder="Motivo (ex: Almoço)">
       <div class="flexbtns" style="margin-top:10px;margin-bottom:16px">
