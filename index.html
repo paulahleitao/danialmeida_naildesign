@@ -1579,43 +1579,57 @@ function renderConfigTab(barber){
     <div class="row" style="margin-bottom:8px">
       <div class="grow sub">${b.days.map(i=>dayLabels[i]).join(', ')} · ${minToLabel(b.start)}–${minToLabel(b.end)} · ${esc(b.label)}</div>
       <button class="btn btn-sm btn-red" onclick="removeRecurringBlock('${barber.id}','${b.id}')">Remover</button>
-    </div>`).join('') : '<div class="sub" style="margin-bottom:8px">Nenhum bloqueio fixo cadastrado.</div>';
+    </div>`).join('') : '<div class="sub" style="margin-bottom:8px">Nenhuma pausa fixa cadastrada.</div>';
   const showRecurForm = !!state.showRecurringBlockForm;
   const recurChips = dayLabels.map((l,i)=>`<div class="daychip ${recurBlockSelectedDays.includes(i)?'on':''}" id="recurDay${i}" onclick="toggleRecurDay(${i})">${l}</div>`).join('');
   return `
     <h1 class="page">Configurações</h1>
-    <label class="field-label">Nome</label>
-    <input value="${esc(barber.name)}" onchange="updateBarber('name',this.value)">
-    <label class="field-label">WhatsApp (com DDD, ex: 11999998888)</label>
-    <input value="${esc(barber.whatsapp)}" onchange="updateBarber('whatsapp',this.value)">
-    <label class="field-label">Novo PIN de acesso</label>
-    <input value="${esc(barber.pin)}" onchange="updateBarber('pin',this.value)">
-    <label class="field-label" style="margin-top:8px">Dias e horários de atendimento</label>
-    <div class="sub" style="margin-bottom:10px">Crie grupos diferentes para dias com horários distintos — ex: Ter a Qui um horário, Sex e Sáb outro. Cada dia só pode estar em um grupo.</div>
-    ${groupsHtml}
-    <button class="btn btn-outline" style="margin-bottom:16px" onclick="addScheduleGroup()">+ Adicionar dias e horário</button>
-    <label class="field-label" style="margin-top:8px">Bloqueios fixos</label>
-    <div class="sub" style="margin-bottom:10px">Pausas que se repetem toda semana, como o almoço — valem para sempre, sem precisar renovar.</div>
-    ${recurringHtml}
-    ${showRecurForm ? `
-      <label class="field-label" style="margin-top:6px">Em quais dias</label>
-      <div class="dayrow">${recurChips}</div>
-      <div class="grid2">
-        <div><label class="field-label">De</label><input id="recurStart" inputmode="numeric" oninput="maskTimeInput(this)" placeholder="12:00"></div>
-        <div><label class="field-label">Até</label><input id="recurEnd" inputmode="numeric" oninput="maskTimeInput(this)" placeholder="13:00"></div>
-      </div>
-      <input id="recurLabel" placeholder="Motivo (ex: Almoço)">
-      <div class="flexbtns" style="margin-top:10px;margin-bottom:16px">
-        <button class="btn btn-sm btn-gold" onclick="addRecurringBlock('${barber.id}')">Salvar bloqueio fixo</button>
-        <button class="btn btn-sm btn-outline" onclick="recurBlockSelectedDays=[];state.showRecurringBlockForm=false;render()">Cancelar</button>
-      </div>
-    ` : `
-      <button class="btn btn-outline" style="margin-bottom:16px" onclick="state.showRecurringBlockForm=true;render()">+ Novo bloqueio fixo</button>
-    `}
-    <label class="field-label" style="margin-top:8px">Ajustes de um dia específico</label>
-    <div class="sub" style="margin-bottom:10px">Fechar, abrir ou bloquear um horário só naquele dia (sem mudar a regra fixa).</div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="name" style="margin-bottom:10px">👤 Seus dados</div>
+      <label class="field-label">Nome</label>
+      <input value="${esc(barber.name)}" onchange="updateBarber('name',this.value)">
+      <label class="field-label">WhatsApp (com DDD, ex: 11999998888)</label>
+      <input value="${esc(barber.whatsapp)}" onchange="updateBarber('whatsapp',this.value)">
+      <label class="field-label">Novo PIN de acesso</label>
+      <input value="${esc(barber.pin)}" onchange="updateBarber('pin',this.value)">
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="name" style="margin-bottom:4px">🗓️ Dias e horários de atendimento</div>
+      <div class="sub" style="margin-bottom:10px">Sua agenda padrão, toda semana. Crie grupos diferentes para dias com horários distintos — ex: Ter a Qui um horário, Sex e Sáb outro. Cada dia só pode estar em um grupo.</div>
+      ${groupsHtml}
+      <button class="btn btn-outline" onclick="addScheduleGroup()">+ Adicionar dias e horário</button>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="name" style="margin-bottom:4px">☕ Pausas fixas (toda semana)</div>
+      <div class="sub" style="margin-bottom:10px">Pausas que se repetem toda semana, como o almoço — valem para sempre, sem precisar renovar.</div>
+      ${recurringHtml}
+      ${showRecurForm ? `
+        <label class="field-label" style="margin-top:6px">Em quais dias</label>
+        <div class="dayrow">${recurChips}</div>
+        <div class="grid2">
+          <div><label class="field-label">De</label><input id="recurStart" inputmode="numeric" oninput="maskTimeInput(this)" placeholder="12:00"></div>
+          <div><label class="field-label">Até</label><input id="recurEnd" inputmode="numeric" oninput="maskTimeInput(this)" placeholder="13:00"></div>
+        </div>
+        <input id="recurLabel" placeholder="Motivo (ex: Almoço)">
+        <div class="flexbtns" style="margin-top:10px">
+          <button class="btn btn-sm btn-gold" onclick="addRecurringBlock('${barber.id}')">Salvar pausa fixa</button>
+          <button class="btn btn-sm btn-outline" onclick="recurBlockSelectedDays=[];state.showRecurringBlockForm=false;render()">Cancelar</button>
+        </div>
+      ` : `
+        <button class="btn btn-outline" onclick="state.showRecurringBlockForm=true;render()">+ Nova pausa fixa</button>
+      `}
+    </div>
+
+    <div style="margin-bottom:6px">
+      <div class="name" style="margin-bottom:4px">📅 Ajustes de um dia específico</div>
+      <div class="sub" style="margin-bottom:10px">Só para exceções pontuais: fechar, abrir a mais ou bloquear um horário em UM dia — sem mexer na sua agenda padrão nem nas pausas fixas acima.</div>
+    </div>
     ${renderConfigDateStrip()}
     ${renderDayAdjust(barber, state.configDate || todayStr())}
+
     <div class="banner" style="margin-top:16px">As notificações de WhatsApp são links que abrem já com a mensagem pronta — grátis, mas exigem um toque em "enviar" no seu celular.</div>`;
 }
 function renderConfigDateStrip(){
