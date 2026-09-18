@@ -88,6 +88,9 @@
   .step{height:4px;flex:1;background:var(--line);border-radius:2px;}
   .step.done{background:var(--gold);}
   .service-edit input{margin-bottom:8px;}
+  .card.service-edit{padding:12px;margin-bottom:8px;}
+  .service-edit label.field-label{margin-bottom:3px;}
+  .service-edit .grid2{gap:6px;margin-bottom:2px;}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .dayrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
   .daychip{padding:8px 10px;border-radius:6px;border:1px solid var(--line);font-size:12px;cursor:pointer;background:var(--bg-alt);}
@@ -268,6 +271,23 @@ function esc(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;',
 /* Formata preço para exibição ao CLIENTE: se o serviço estiver zerado (ex: incluso no mensal), não mostra nada. */
 function clientPriceLabel(price){ return (price>0) ? ('R$ '+price.toFixed(2)) : ''; }
 /* Máscara para campos de horário: o barbeiro digita só os números (ex: 1300) e o campo já formata para 13:00 */
+function maskCurrencyInput(el){
+  let v = el.value.replace(/\D/g,'');
+  if(!v){ el.value=''; return; }
+  v = v.replace(/^0+(?=\d)/,'');
+  while(v.length<3) v = '0'+v;
+  let cents = v.slice(-2);
+  let reais = v.slice(0,-2).replace(/^0+(?=\d)/,'') || '0';
+  reais = reais.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  el.value = reais+','+cents;
+}
+function parseCurrencyBR(v){
+  return parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
+}
+function formatCurrencyBR(n){
+  n = Number(n)||0;
+  return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
 function maskTimeInput(el){
   let v = el.value.replace(/\D/g,'');
   /* Hora não pode começar com 3-9 (não existe hora "3x" em relógio 24h), então nesse caso
@@ -1121,7 +1141,7 @@ function expenseFormHtml(draft){
     <label class="field-label">Descrição</label>
     <input placeholder="Ex: Gilete, toalha, produto" value="${esc(draft.label||'')}" oninput="state.expenseDraft.label=this.value">
     <label class="field-label">Valor (R$)</label>
-    <input type="number" step="0.01" value="${draft.value}" oninput="state.expenseDraft.value=this.value">
+    <input inputmode="numeric" placeholder="0,00" value="${draft.value ? formatCurrencyBR(draft.value) : ''}" oninput="maskCurrencyInput(this);state.expenseDraft.value=this.value">
     <div class="flexbtns" style="margin-top:10px">
       <button class="btn btn-sm btn-gold" onclick="saveExpenseDraft()">Salvar gasto</button>
       <button class="btn btn-sm btn-outline" onclick="state.expenseDraft=null;render()">Cancelar</button>
@@ -1140,7 +1160,7 @@ function editExpenseClick(id){
 async function saveExpenseDraft(){
   const draft = state.expenseDraft;
   const label = (draft.label||'').trim();
-  const value = parseFloat(draft.value);
+  const value = parseCurrencyBR(draft.value);
   if(!label){ alert('Descreva o gasto (ex: Gilete).'); return; }
   if(isNaN(value) || value<=0){ alert('Informe um valor válido.'); return; }
   if(!draft.date){ alert('Informe a data do gasto.'); return; }
@@ -1527,22 +1547,46 @@ function renderServicosTab(barber){
   let rows = db.services.map(s=>`
     <div class="card service-edit">
       <label class="field-label">Nome</label>
-      <input value="${esc(s.name)}" onchange="updateService('${s.id}','name',this.value)">
+      <input id="svcName_${s.id}" value="${esc(s.name)}" oninput="markServiceDirty('${s.id}')">
       <div class="grid2">
-        <div><label class="field-label">Duração (min)</label><input type="number" value="${s.duration}" onchange="updateService('${s.id}','duration',this.value)"></div>
-        <div><label class="field-label">Preço (R$)</label><input type="number" value="${s.price}" onchange="updateService('${s.id}','price',this.value)"></div>
+        <div><label class="field-label">Duração (min)</label><input id="svcDur_${s.id}" type="number" value="${s.duration}" oninput="markServiceDirty('${s.id}')"></div>
+        <div><label class="field-label">Preço (R$)</label><input id="svcPrice_${s.id}" type="number" value="${s.price}" oninput="markServiceDirty('${s.id}')"></div>
       </div>
-      <button class="btn btn-sm btn-red" onclick="deleteService('${s.id}')">Remover</button>
+      <div class="flexbtns" style="margin-top:2px">
+        <button class="btn btn-sm btn-red" onclick="deleteService('${s.id}')">Remover</button>
+        <button id="svcSaveBtn_${s.id}" class="btn btn-sm btn-outline" disabled onclick="saveServiceDraft('${s.id}')">✓ Salvo</button>
+      </div>
     </div>`).join('');
   return `
     <h1 class="page">Serviços e valores</h1>
     ${rows}
     <button class="btn btn-outline" onclick="addService()">+ Adicionar serviço</button>`;
 }
-async function updateService(id, field, val){
+function markServiceDirty(id){
+  const btn = document.getElementById('svcSaveBtn_'+id);
+  if(!btn) return;
+  btn.textContent = 'Salvar';
+  btn.classList.remove('btn-outline');
+  btn.classList.add('btn-gold');
+  btn.disabled = false;
+}
+async function saveServiceDraft(id){
   const s = db.services.find(x=>x.id===id);
-  s[field] = (field==='duration'||field==='price') ? parseFloat(val)||0 : val;
+  if(!s) return;
+  const nameEl = document.getElementById('svcName_'+id);
+  const durEl = document.getElementById('svcDur_'+id);
+  const priceEl = document.getElementById('svcPrice_'+id);
+  s.name = nameEl.value;
+  s.duration = parseFloat(durEl.value)||0;
+  s.price = parseFloat(priceEl.value)||0;
   await saveDB();
+  const btn = document.getElementById('svcSaveBtn_'+id);
+  if(btn){
+    btn.textContent = '✓ Salvo';
+    btn.classList.remove('btn-gold');
+    btn.classList.add('btn-outline');
+    btn.disabled = true;
+  }
 }
 async function addService(){
   db.services.push({id:uid(), name:'Novo serviço', duration:30, price:30});
